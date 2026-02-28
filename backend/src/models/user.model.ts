@@ -1,20 +1,30 @@
-// Sample mock database using an array
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import * as dotenv from "dotenv";
+dotenv.config();
+
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL!,
+});
+
+export const prisma = new PrismaClient({ adapter });
+
 export interface User {
   id: number;
-  name?: string;
-  email?: string;
+  name?: string | null;
+  email: string;
   [key: string]: any;
 }
 
-const users: User[] = [{ id: 1, name: "John Doe", email: "john@example.com" }];
-
 export const findAll = async (): Promise<User[]> => {
-  // Simulate async DB query
-  return Promise.resolve(users);
+  return await prisma.user.findMany();
 };
 
 export const create = async (user: any): Promise<User> => {
-  const newUser = { id: Date.now(), ...user };
-  users.push(newUser);
-  return Promise.resolve(newUser);
+  return await prisma.user.create({
+    data: {
+      email: user.email,
+      name: user.name,
+    },
+  });
 };
